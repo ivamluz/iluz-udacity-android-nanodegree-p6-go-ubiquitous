@@ -407,30 +407,35 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         use to determine why they aren't seeing weather.
      */
     private void updateEmptyView() {
-        if (mForecastAdapter.getItemCount() == 0) {
-            TextView tv = (TextView) getView().findViewById(R.id.recyclerview_forecast_empty);
-            if (null != tv) {
-                // if cursor is empty, why? do we have an invalid location
-                int message = R.string.empty_forecast_list;
-                @SunshineSyncAdapter.LocationStatus int location = Utility.getLocationStatus(getActivity());
-                switch (location) {
-                    case SunshineSyncAdapter.LOCATION_STATUS_SERVER_DOWN:
-                        message = R.string.empty_forecast_list_server_down;
-                        break;
-                    case SunshineSyncAdapter.LOCATION_STATUS_SERVER_INVALID:
-                        message = R.string.empty_forecast_list_server_error;
-                        break;
-                    case SunshineSyncAdapter.LOCATION_STATUS_INVALID:
-                        message = R.string.empty_forecast_list_invalid_location;
-                        break;
-                    default:
-                        if (!Utility.isNetworkAvailable(getActivity())) {
-                            message = R.string.empty_forecast_list_no_network;
-                        }
-                }
-                tv.setText(message);
-            }
+        if (mForecastAdapter.getItemCount() > 0) {
+            return;
         }
+
+        TextView tv = (TextView) getView().findViewById(R.id.recyclerview_forecast_empty);
+        if (null == tv) {
+            return;
+        }
+
+        // if cursor is empty, why? do we have an invalid location
+        int message = R.string.empty_forecast_list;
+        @SunshineSyncAdapter.LocationStatus int location = Utility.getLocationStatus(getActivity());
+        switch (location) {
+            case SunshineSyncAdapter.LOCATION_STATUS_SERVER_DOWN:
+                message = R.string.empty_forecast_list_server_down;
+                break;
+            case SunshineSyncAdapter.LOCATION_STATUS_SERVER_INVALID:
+                message = R.string.empty_forecast_list_server_error;
+                break;
+            case SunshineSyncAdapter.LOCATION_STATUS_INVALID:
+                message = R.string.empty_forecast_list_invalid_location;
+                break;
+            default:
+                if (!Utility.isNetworkAvailable(getActivity())) {
+                    message = R.string.empty_forecast_list_no_network;
+                }
+        }
+
+        tv.setText(message);
     }
 
     @Override
