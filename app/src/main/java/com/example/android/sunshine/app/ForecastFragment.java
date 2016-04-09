@@ -272,24 +272,29 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         // Using the URI scheme for showing a location found on a map.  This super-handy
         // intent can is detailed in the "Common Intents" page of Android's developer site:
         // http://developer.android.com/guide/components/intents-common.html#Maps
-        if (null != mForecastAdapter) {
-            Cursor c = mForecastAdapter.getCursor();
-            if (null != c) {
-                c.moveToPosition(0);
-                String posLat = c.getString(COL_COORD_LAT);
-                String posLong = c.getString(COL_COORD_LONG);
-                Uri geoLocation = Uri.parse("geo:" + posLat + "," + posLong);
+        if (null == mForecastAdapter) {
+            Log.d(LOG_TAG, "mForecastAdapter is null.");
+            return;
+        }
 
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(geoLocation);
+        Cursor c = mForecastAdapter.getCursor();
+        if (null == c || c.getCount() == 0) {
+            Log.d(LOG_TAG, "Cursor data is empty.");
+            return;
+        }
 
-                if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
-                    startActivity(intent);
-                } else {
-                    Log.d(LOG_TAG, "Couldn't call " + geoLocation.toString() + ", no receiving apps installed!");
-                }
-            }
+        c.moveToPosition(0);
+        String posLat = c.getString(COL_COORD_LAT);
+        String posLong = c.getString(COL_COORD_LONG);
+        Uri geoLocation = Uri.parse("geo:" + posLat + "," + posLong);
 
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(geoLocation);
+
+        if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+            startActivity(intent);
+        } else {
+            Log.d(LOG_TAG, "Couldn't call " + geoLocation.toString() + ", no receiving apps installed!");
         }
     }
 
