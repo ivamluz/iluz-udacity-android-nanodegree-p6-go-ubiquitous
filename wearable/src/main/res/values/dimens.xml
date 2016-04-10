@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="digital_time_text_size">40sp</dimen>
+    <dimen name="digital_time_text_size">35sp</dimen>
     <dimen name="digital_time_text_size_round">45sp</dimen>
-    <dimen name="digital_time_interactive_x_offset">17dp</dimen>
+    <dimen name="digital_time_interactive_x_offset">25dp</dimen>
     <dimen name="digital_time_interactive_x_offset_round">25dp</dimen>
     <dimen name="digital_time_y_offset">65dp</dimen>
 
@@ -17,4 +17,10 @@
     <dimen name="digital_high_temperature_interactive_x_offset">75dp</dimen>
     <dimen name="digital_high_temperature_interactive_x_offset_round">25dp</dimen>
     <dimen name="digital_high_temperature_y_offset">150dp</dimen>
+
+    <dimen name="digital_low_temperature_text_size">25sp</dimen>
+    <dimen name="digital_low_temperature_text_size_round">25sp</dimen>
+    <dimen name="digital_low_temperature_interactive_x_offset">135dp</dimen>
+    <dimen name="digital_low_temperature_interactive_x_offset_round">25dp</dimen>
+    <dimen name="digital_low_temperature_y_offset">147dp</dimen>
 </resources>

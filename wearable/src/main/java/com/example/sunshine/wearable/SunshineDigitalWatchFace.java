@@ -97,6 +97,7 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
         private Paint mTextPaintTime;
         private Paint mTextPaintDate;
         private Paint mTextPaintHighTemperature;
+        private Paint mTextPaintLowTemperature;
 
         private boolean mAmbient;
         private Time mTime;
@@ -119,6 +120,9 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
 
         private float mXOffsetHighTemperature;
         private float mYOffsetHighTemperature;
+
+        private float mXOffsetLowTemperature;
+        private float mYOffsetLowTemperature;
 
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we
@@ -145,6 +149,7 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
             mYOffsetTime = mResources.getDimension(R.dimen.digital_time_y_offset);
             mYOffsetDate = mResources.getDimension(R.dimen.digital_date_y_offset);
             mYOffsetHighTemperature = mResources.getDimension(R.dimen.digital_high_temperature_y_offset);
+            mYOffsetLowTemperature = mResources.getDimension(R.dimen.digital_low_temperature_y_offset);
 
             mBackgroundPaint = new Paint();
             mBackgroundPaint.setColor(mResources.getColor(R.color.background_default));
@@ -152,6 +157,7 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
             mTextPaintTime = mTextPaintHelper.forType(TextPaintHelper.Type.TIME);
             mTextPaintDate = mTextPaintHelper.forType(TextPaintHelper.Type.DATE);
             mTextPaintHighTemperature = mTextPaintHelper.forType(TextPaintHelper.Type.HIGH_TEMPERATURE);
+            mTextPaintLowTemperature = mTextPaintHelper.forType(TextPaintHelper.Type.LOW_TEMPERATURE);
 
             mTime = new Time();
         }
@@ -207,6 +213,7 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
             adjustPaintingForTime(isRound);
             adjustPaintingForDate(isRound);
             adjustPaintingForHighTemperature(isRound);
+            adjustPaintingForLowTemperature(isRound);
         }
 
         private void adjustPaintingForTime(boolean isRound) {
@@ -231,6 +238,14 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
             float textSize = mResources.getDimension(isRound
                     ? R.dimen.digital_high_temperature_text_size_round : R.dimen.digital_high_temperature_text_size);
             mTextPaintHighTemperature.setTextSize(textSize);
+        }
+
+        private void adjustPaintingForLowTemperature(boolean isRound) {
+            mXOffsetLowTemperature = mResources.getDimension(isRound
+                    ? R.dimen.digital_low_temperature_interactive_x_offset_round : R.dimen.digital_low_temperature_interactive_x_offset);
+            float textSize = mResources.getDimension(isRound
+                    ? R.dimen.digital_low_temperature_text_size_round : R.dimen.digital_low_temperature_text_size);
+            mTextPaintLowTemperature.setTextSize(textSize);
         }
 
         @Override
@@ -307,6 +322,9 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
 
             String highTemperatureText = "25º";
             canvas.drawText(highTemperatureText, mXOffsetHighTemperature, mYOffsetHighTemperature, mTextPaintHighTemperature);
+
+            String lowTemperatureText = "17º";
+            canvas.drawText(lowTemperatureText, mXOffsetLowTemperature, mYOffsetLowTemperature, mTextPaintLowTemperature);
         }
 
         /**

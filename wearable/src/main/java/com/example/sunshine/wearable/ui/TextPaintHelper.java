@@ -14,7 +14,7 @@ public class TextPaintHelper {
             Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
 
     private static final Typeface BOLD_TYPEFACE =
-            Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
+            Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD);
 
     private final Resources mResources;
 
