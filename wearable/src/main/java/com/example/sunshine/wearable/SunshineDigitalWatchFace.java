@@ -30,6 +30,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
+import android.text.format.DateFormat;
 import android.text.format.Time;
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
@@ -83,34 +84,48 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
     }
 
     private class Engine extends CanvasWatchFaceService.Engine {
-        final Handler mUpdateTimeHandler = new EngineHandler(this);
-        boolean mRegisteredTimeZoneReceiver = false;
+        private static final String sDateFormat = "E, MMM d, yyyy";
+        private final Handler mUpdateTimeHandler = new EngineHandler(this);
+        private boolean mRegisteredTimeZoneReceiver = false;
 
-        Resources mResources;
+        private Resources mResources;
 
         private TextPaintHelper mTextPaintHelper;
 
-        Paint mBackgroundPaint;
-        Paint mTextPaintTime;
-        boolean mAmbient;
-        Time mTime;
-        final BroadcastReceiver mTimeZoneReceiver = new BroadcastReceiver() {
+        private Paint mBackgroundPaint;
+
+        private Paint mTextPaintTime;
+        private Paint mTextPaintDate;
+        private Paint mTextPaintHighTemperature;
+
+        private boolean mAmbient;
+        private Time mTime;
+
+        private final BroadcastReceiver mTimeZoneReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 mTime.clear(intent.getStringExtra("time-zone"));
                 mTime.setToNow();
             }
         };
-        int mTapCount;
 
-        float mXOffset;
-        float mYOffset;
+        private int mTapCount;
+
+        private float mXOffsetTime;
+        private float mYOffsetTime;
+
+        private float mXOffsetDate;
+        private float mYOffsetDate;
+
+        private float mXOffsetHighTemperature;
+        private float mYOffsetHighTemperature;
 
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we
          * disable anti-aliasing in ambient mode.
          */
-        boolean mLowBitAmbient;
+        private boolean mLowBitAmbient;
+
 
 
         @Override
@@ -126,12 +141,17 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
             mResources = SunshineDigitalWatchFace.this.getResources();
             mTextPaintHelper = new TextPaintHelper(mResources);
 
-            mYOffset = mResources.getDimension(R.dimen.digital_y_offset);
+
+            mYOffsetTime = mResources.getDimension(R.dimen.digital_time_y_offset);
+            mYOffsetDate = mResources.getDimension(R.dimen.digital_date_y_offset);
+            mYOffsetHighTemperature = mResources.getDimension(R.dimen.digital_date_y_offset);
 
             mBackgroundPaint = new Paint();
             mBackgroundPaint.setColor(mResources.getColor(R.color.background_default));
 
             mTextPaintTime = mTextPaintHelper.forType(TextPaintHelper.Type.TIME);
+            mTextPaintDate = mTextPaintHelper.forType(TextPaintHelper.Type.DATE);
+            mTextPaintHighTemperature = mTextPaintHelper.forType(TextPaintHelper.Type.HIGH_TEMPERATURE);
 
             mTime = new Time();
         }
@@ -182,15 +202,35 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
         public void onApplyWindowInsets(WindowInsets insets) {
             super.onApplyWindowInsets(insets);
 
-            // Load resources that have alternate values for round watches.
-
             boolean isRound = insets.isRound();
-            mXOffset = mResources.getDimension(isRound
-                    ? R.dimen.digital_x_offset_round : R.dimen.digital_x_offset);
-            float textSize = mResources.getDimension(isRound
-                    ? R.dimen.digital_text_size_round : R.dimen.digital_text_size);
 
-            mTextPaintTime.setTextSize(textSize);
+            adjustPaintingForTime(isRound);
+            adjustPaintingForDate(isRound);
+            adjustPaintingForHighTemperature(isRound);
+        }
+
+        private void adjustPaintingForTime(boolean isRound) {
+            mXOffsetTime = mResources.getDimension(isRound
+                    ? R.dimen.digital_time_interactive_x_offset_round : R.dimen.digital_time_interactive_x_offset);
+            float textSizeTime = mResources.getDimension(isRound
+                    ? R.dimen.digital_time_text_size_round : R.dimen.digital_time_text_size);
+            mTextPaintTime.setTextSize(textSizeTime);
+        }
+
+        private void adjustPaintingForDate(boolean isRound) {
+            mXOffsetDate = mResources.getDimension(isRound
+                    ? R.dimen.digital_date_interactive_x_offset_round : R.dimen.digital_date_interactive_x_offset);
+            float textSizeDate = mResources.getDimension(isRound
+                    ? R.dimen.digital_date_text_size_round : R.dimen.digital_date_text_size);
+            mTextPaintDate.setTextSize(textSizeDate);
+        }
+
+        private void adjustPaintingForHighTemperature(boolean isRound) {
+            mXOffsetHighTemperature = mResources.getDimension(isRound
+                    ? R.dimen.digital_high_temperature_interactive_x_offset_round : R.dimen.digital_high_temperature_interactive_x_offset);
+            float textSize = mResources.getDimension(isRound
+                    ? R.dimen.digital_high_temperature_text_size_round : R.dimen.digital_high_temperature_text_size);
+            mTextPaintHighTemperature.setTextSize(textSize);
         }
 
         @Override
@@ -256,10 +296,17 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
 
             // Draw H:MM in ambient mode or H:MM:SS in interactive mode.
             mTime.setToNow();
-            String text = mAmbient
-                    ? String.format("%d:%02d", mTime.hour, mTime.minute)
-                    : String.format("%d:%02d:%02d", mTime.hour, mTime.minute, mTime.second);
-            canvas.drawText(text, mXOffset, mYOffset, mTextPaintTime);
+
+            String timeText = mAmbient
+                    ? String.format("%02d:%02d", mTime.hour, mTime.minute)
+                    : String.format("%02d:%02d:%02d", mTime.hour, mTime.minute, mTime.second);
+            canvas.drawText(timeText, mXOffsetTime, mYOffsetTime, mTextPaintTime);
+
+            String dateText = DateFormat.format(sDateFormat, mTime.toMillis(false)).toString().toUpperCase();
+            canvas.drawText(dateText, mXOffsetDate, mYOffsetDate, mTextPaintDate);
+
+            String highTemperatureText = "25º";
+            canvas.drawText(highTemperatureText, mXOffsetHighTemperature, mYOffsetHighTemperature, mTextPaintHighTemperature);
         }
 
         /**
