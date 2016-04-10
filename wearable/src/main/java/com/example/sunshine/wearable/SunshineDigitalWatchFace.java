@@ -35,7 +35,6 @@ import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.DateFormat;
 import android.text.format.Time;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
 
@@ -177,7 +176,7 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
             mTextPaintDate = mTextPaintHelper.forType(TextPaintHelper.Type.DATE);
 
             mSeparatorPaint = new Paint();
-            mSeparatorPaint.setColor(mResources.getColor(R.color.digital_text_secondary));
+            mSeparatorPaint.setColor(mResources.getColor(R.color.digital_text_interactive_secondary));
 
             mTextPaintHighTemperature = mTextPaintHelper.forType(TextPaintHelper.Type.HIGH_TEMPERATURE);
             mTextPaintLowTemperature = mTextPaintHelper.forType(TextPaintHelper.Type.LOW_TEMPERATURE);
@@ -255,49 +254,81 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
         private void adjustPaintingForTime() {
             if (isInAmbientMode()) {
                 mXOffsetTime = mResources.getDimension(mIsRound ? R.dimen.digital_time_ambient_x_offset_round : R.dimen.digital_time_ambient_x_offset) + mMarginLeft;
+                mTextPaintTime.setColor(mResources.getColor(TextPaintHelper.Type.TIME.getAmbientColor()));
             } else {
                 mXOffsetTime = mResources.getDimension(mIsRound ? R.dimen.digital_time_interactive_x_offset_round : R.dimen.digital_time_interactive_x_offset) + mMarginLeft;
+                mTextPaintTime.setColor(mResources.getColor(TextPaintHelper.Type.TIME.getInteractiveColor()));
             }
 
             float textSizeTime = mResources.getDimension(mIsRound ? R.dimen.digital_time_text_size_round : R.dimen.digital_time_text_size);
             mTextPaintTime.setTextSize(textSizeTime);
+
+            if (mLowBitAmbient) {
+                mTextPaintTime.setAntiAlias(!mAmbient);
+            }
         }
 
         private void adjustPaintingForDate() {
             if (isInAmbientMode()) {
                 mXOffsetDate = mResources.getDimension(mIsRound ? R.dimen.digital_date_ambient_x_offset_round : R.dimen.digital_date_ambient_x_offset) + mMarginLeft;
+                mTextPaintDate.setColor(mResources.getColor(TextPaintHelper.Type.DATE.getAmbientColor()));
             } else {
                 mXOffsetDate = mResources.getDimension(mIsRound ? R.dimen.digital_date_interactive_x_offset_round : R.dimen.digital_date_interactive_x_offset) + mMarginLeft;
+                mTextPaintDate.setColor(mResources.getColor(TextPaintHelper.Type.DATE.getInteractiveColor()));
             }
 
             float textSizeDate = mResources.getDimension(mIsRound ? R.dimen.digital_date_text_size_round : R.dimen.digital_date_text_size);
             mTextPaintDate.setTextSize(textSizeDate);
+
+            if (mLowBitAmbient) {
+                mTextPaintDate.setAntiAlias(!mAmbient);
+            }
         }
 
         private void adjustPaintingForHighTemperature() {
             if (isInAmbientMode()) {
                 mXOffsetHighTemperature = mResources.getDimension(mIsRound ? R.dimen.digital_high_temperature_ambient_x_offset_round : R.dimen.digital_high_temperature_ambient_x_offset) + mMarginLeft;
+                mTextPaintHighTemperature.setColor(mResources.getColor(TextPaintHelper.Type.HIGH_TEMPERATURE.getAmbientColor()));
             } else {
                 mXOffsetHighTemperature = mResources.getDimension(mIsRound ? R.dimen.digital_high_temperature_interactive_x_offset_round : R.dimen.digital_high_temperature_interactive_x_offset) + mMarginLeft;
+                mTextPaintHighTemperature.setColor(mResources.getColor(TextPaintHelper.Type.HIGH_TEMPERATURE.getInteractiveColor()));
             }
 
             float textSize = mResources.getDimension(mIsRound ? R.dimen.digital_high_temperature_text_size_round : R.dimen.digital_high_temperature_text_size);
             mTextPaintHighTemperature.setTextSize(textSize);
+
+            if (mLowBitAmbient) {
+                mTextPaintHighTemperature.setAntiAlias(!mAmbient);
+            }
         }
 
         private void adjustPaintingForLowTemperature() {
             if (isInAmbientMode()) {
                 mXOffsetLowTemperature = mResources.getDimension(mIsRound ? R.dimen.digital_low_temperature_ambient_x_offset_round : R.dimen.digital_low_temperature_ambient_x_offset) + mMarginLeft;
+                mTextPaintLowTemperature.setColor(mResources.getColor(TextPaintHelper.Type.LOW_TEMPERATURE.getAmbientColor()));
             } else {
                 mXOffsetLowTemperature = mResources.getDimension(mIsRound ? R.dimen.digital_low_temperature_interactive_x_offset_round : R.dimen.digital_low_temperature_interactive_x_offset) + mMarginLeft;
+                mTextPaintLowTemperature.setColor(mResources.getColor(TextPaintHelper.Type.LOW_TEMPERATURE.getInteractiveColor()));
             }
 
             float textSize = mResources.getDimension(mIsRound ? R.dimen.digital_low_temperature_text_size_round : R.dimen.digital_low_temperature_text_size);
             mTextPaintLowTemperature.setTextSize(textSize);
+
+            if (mLowBitAmbient) {
+                mTextPaintLowTemperature.setAntiAlias(!mAmbient);
+            }
         }
 
         private void adjustPositioningForWeatherIcon() {
             mXOffsetWeatherIcon = mResources.getDimension(mIsRound ? R.dimen.digital_weather_icon_interactive_x_offset_round : R.dimen.digital_weather_icon_interactive_x_offset) + mMarginLeft;
+        }
+
+        private void adjustSeparator() {
+            if (isInAmbientMode()) {
+                mSeparatorPaint.setColor(mResources.getColor(R.color.digital_text_ambient_primary));
+            } else {
+                mSeparatorPaint.setColor(mResources.getColor(R.color.digital_text_interactive_secondary));
+            }
         }
 
         @Override
@@ -317,9 +348,6 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
             super.onAmbientModeChanged(inAmbientMode);
             if (mAmbient != inAmbientMode) {
                 mAmbient = inAmbientMode;
-                if (mLowBitAmbient) {
-                    mTextPaintTime.setAntiAlias(!inAmbientMode);
-                }
 
                 adjustPaintingForTime();
                 adjustPaintingForDate();

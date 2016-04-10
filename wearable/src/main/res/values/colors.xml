@@ -2,6 +2,8 @@
 <resources>
     <color name="background_default">#1ca8f4</color>
     <color name="background_tapped">#1590d2</color>
-    <color name="digital_text_primary">#ffffff</color>
-    <color name="digital_text_secondary">#addffb</color>
+    <color name="digital_text_interactive_primary">#ffffff</color>
+    <color name="digital_text_interactive_secondary">#addffb</color>
+    <color name="digital_text_ambient_primary">#ffffff</color>
+    <color name="digital_text_ambient_secondary">#ffffff</color>
 </resources>

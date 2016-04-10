@@ -19,23 +19,29 @@ public class TextPaintHelper {
     private final Resources mResources;
 
     public enum Type {
-        TIME(R.color.digital_text_primary, BOLD_TYPEFACE, true),
-        DATE(R.color.digital_text_secondary, NORMAL_TYPEFACE, true),
-        HIGH_TEMPERATURE(R.color.digital_text_primary, BOLD_TYPEFACE, true),
-        LOW_TEMPERATURE(R.color.digital_text_secondary, NORMAL_TYPEFACE, true);
+        TIME(R.color.digital_text_interactive_primary, R.color.digital_text_ambient_primary, BOLD_TYPEFACE, true),
+        DATE(R.color.digital_text_interactive_secondary, R.color.digital_text_ambient_secondary, NORMAL_TYPEFACE, true),
+        HIGH_TEMPERATURE(R.color.digital_text_interactive_primary, R.color.digital_text_ambient_primary, BOLD_TYPEFACE, true),
+        LOW_TEMPERATURE(R.color.digital_text_interactive_secondary, R.color.digital_text_ambient_secondary, NORMAL_TYPEFACE, true);
 
-        private int mColor;
+        private int mInteractiveColor;
+        private int mAmbientColor;
         private Typeface mTypeface;
         private boolean mShouldApplyAntialias;
 
-        Type(int color, Typeface typeface, boolean shouldApplyAntialias) {
-            mColor = color;
+        Type(int interactiveColor, int ambientColor, Typeface typeface, boolean shouldApplyAntialias) {
+            mInteractiveColor = interactiveColor;
+            mAmbientColor = ambientColor;
             mTypeface = typeface;
             mShouldApplyAntialias = shouldApplyAntialias;
         }
 
-        public int getColor() {
-            return mColor;
+        public int getInteractiveColor() {
+            return mInteractiveColor;
+        }
+
+        public int getAmbientColor() {
+            return mAmbientColor;
         }
 
         public Typeface getTypeface() {
@@ -53,7 +59,7 @@ public class TextPaintHelper {
 
     public Paint forType(Type type) {
         Paint paint = new Paint();
-        paint.setColor(mResources.getColor(type.getColor()));
+        paint.setColor(mResources.getColor(type.getInteractiveColor()));
         paint.setTypeface(type.getTypeface());
         paint.setAntiAlias(type.shouldApplyAntialias());
 
