@@ -110,6 +110,7 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
         private Bitmap mWeatherIcon;
 
         private boolean mAmbient;
+        private boolean mIsRound;
         private Time mTime;
 
         private final BroadcastReceiver mTimeZoneReceiver = new BroadcastReceiver() {
@@ -230,17 +231,17 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
         public void onApplyWindowInsets(WindowInsets insets) {
             super.onApplyWindowInsets(insets);
 
-            boolean isRound = insets.isRound();
+            mIsRound = insets.isRound();
 
             // TODO: check with instructors a better way to do this.
             calculateLeftMargin(insets);
 
-            adjustPaintingForTime(isRound);
-            adjustPaintingForDate(isRound);
-            adjustPaintingForHighTemperature(isRound);
-            adjustPaintingForLowTemperature(isRound);
+            adjustPaintingForTime();
+            adjustPaintingForDate();
+            adjustPaintingForHighTemperature();
+            adjustPaintingForLowTemperature();
 
-            adjustPositioningForWeatherIcon(isRound);
+            adjustPositioningForWeatherIcon();
         }
 
         private void calculateLeftMargin(WindowInsets insets) {
@@ -251,32 +252,52 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
             }
         }
 
-        private void adjustPaintingForTime(boolean isRound) {
-            mXOffsetTime = mResources.getDimension(isRound ? R.dimen.digital_time_interactive_x_offset_round : R.dimen.digital_time_interactive_x_offset) + mMarginLeft;
-            float textSizeTime = mResources.getDimension(isRound ? R.dimen.digital_time_text_size_round : R.dimen.digital_time_text_size);
+        private void adjustPaintingForTime() {
+            if (isInAmbientMode()) {
+                mXOffsetTime = mResources.getDimension(mIsRound ? R.dimen.digital_time_ambient_x_offset_round : R.dimen.digital_time_ambient_x_offset) + mMarginLeft;
+            } else {
+                mXOffsetTime = mResources.getDimension(mIsRound ? R.dimen.digital_time_interactive_x_offset_round : R.dimen.digital_time_interactive_x_offset) + mMarginLeft;
+            }
+
+            float textSizeTime = mResources.getDimension(mIsRound ? R.dimen.digital_time_text_size_round : R.dimen.digital_time_text_size);
             mTextPaintTime.setTextSize(textSizeTime);
         }
 
-        private void adjustPaintingForDate(boolean isRound) {
-            mXOffsetDate = mResources.getDimension(isRound ? R.dimen.digital_date_interactive_x_offset_round : R.dimen.digital_date_interactive_x_offset) + mMarginLeft;
-            float textSizeDate = mResources.getDimension(isRound ? R.dimen.digital_date_text_size_round : R.dimen.digital_date_text_size);
+        private void adjustPaintingForDate() {
+            if (isInAmbientMode()) {
+                mXOffsetDate = mResources.getDimension(mIsRound ? R.dimen.digital_date_ambient_x_offset_round : R.dimen.digital_date_ambient_x_offset) + mMarginLeft;
+            } else {
+                mXOffsetDate = mResources.getDimension(mIsRound ? R.dimen.digital_date_interactive_x_offset_round : R.dimen.digital_date_interactive_x_offset) + mMarginLeft;
+            }
+
+            float textSizeDate = mResources.getDimension(mIsRound ? R.dimen.digital_date_text_size_round : R.dimen.digital_date_text_size);
             mTextPaintDate.setTextSize(textSizeDate);
         }
 
-        private void adjustPaintingForHighTemperature(boolean isRound) {
-            mXOffsetHighTemperature = mResources.getDimension(isRound ? R.dimen.digital_high_temperature_interactive_x_offset_round : R.dimen.digital_high_temperature_interactive_x_offset) + mMarginLeft;
-            float textSize = mResources.getDimension(isRound ? R.dimen.digital_high_temperature_text_size_round : R.dimen.digital_high_temperature_text_size);
+        private void adjustPaintingForHighTemperature() {
+            if (isInAmbientMode()) {
+                mXOffsetHighTemperature = mResources.getDimension(mIsRound ? R.dimen.digital_high_temperature_ambient_x_offset_round : R.dimen.digital_high_temperature_ambient_x_offset) + mMarginLeft;
+            } else {
+                mXOffsetHighTemperature = mResources.getDimension(mIsRound ? R.dimen.digital_high_temperature_interactive_x_offset_round : R.dimen.digital_high_temperature_interactive_x_offset) + mMarginLeft;
+            }
+
+            float textSize = mResources.getDimension(mIsRound ? R.dimen.digital_high_temperature_text_size_round : R.dimen.digital_high_temperature_text_size);
             mTextPaintHighTemperature.setTextSize(textSize);
         }
 
-        private void adjustPaintingForLowTemperature(boolean isRound) {
-            mXOffsetLowTemperature = mResources.getDimension(isRound ? R.dimen.digital_low_temperature_interactive_x_offset_round : R.dimen.digital_low_temperature_interactive_x_offset) + mMarginLeft;
-            float textSize = mResources.getDimension(isRound ? R.dimen.digital_low_temperature_text_size_round : R.dimen.digital_low_temperature_text_size);
+        private void adjustPaintingForLowTemperature() {
+            if (isInAmbientMode()) {
+                mXOffsetLowTemperature = mResources.getDimension(mIsRound ? R.dimen.digital_low_temperature_ambient_x_offset_round : R.dimen.digital_low_temperature_ambient_x_offset) + mMarginLeft;
+            } else {
+                mXOffsetLowTemperature = mResources.getDimension(mIsRound ? R.dimen.digital_low_temperature_interactive_x_offset_round : R.dimen.digital_low_temperature_interactive_x_offset) + mMarginLeft;
+            }
+
+            float textSize = mResources.getDimension(mIsRound ? R.dimen.digital_low_temperature_text_size_round : R.dimen.digital_low_temperature_text_size);
             mTextPaintLowTemperature.setTextSize(textSize);
         }
 
-        private void adjustPositioningForWeatherIcon(boolean isRound) {
-            mXOffsetWeatherIcon = mResources.getDimension(isRound ? R.dimen.digital_weather_icon_interactive_x_offset_round : R.dimen.digital_weather_icon_interactive_x_offset) + mMarginLeft;
+        private void adjustPositioningForWeatherIcon() {
+            mXOffsetWeatherIcon = mResources.getDimension(mIsRound ? R.dimen.digital_weather_icon_interactive_x_offset_round : R.dimen.digital_weather_icon_interactive_x_offset) + mMarginLeft;
         }
 
         @Override
@@ -299,6 +320,12 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
                 if (mLowBitAmbient) {
                     mTextPaintTime.setAntiAlias(!inAmbientMode);
                 }
+
+                adjustPaintingForTime();
+                adjustPaintingForDate();
+                adjustPaintingForHighTemperature();
+                adjustPaintingForLowTemperature();
+
                 invalidate();
             }
 
