@@ -29,4 +29,6 @@
     <dimen name="digital_low_temperature_interactive_x_offset">135dp</dimen>
     <dimen name="digital_low_temperature_interactive_x_offset_round">150dp</dimen>
     <dimen name="digital_low_temperature_y_offset">147dp</dimen>
+
+    <dimen name="digital_chin_left_margin">15dp</dimen>
 </resources>

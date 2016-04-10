@@ -35,6 +35,7 @@ import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.DateFormat;
 import android.text.format.Time;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
 
@@ -87,6 +88,8 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
     }
 
     private class Engine extends CanvasWatchFaceService.Engine {
+        private String LOG_TAG = Engine.class.getSimpleName();
+
         private static final String sDateFormat = "E, MMM d, yyyy";
         private static final int sSeparatorWidth = 80;
         private final Handler mUpdateTimeHandler = new EngineHandler(this);
@@ -141,8 +144,7 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
          * disable anti-aliasing in ambient mode.
          */
         private boolean mLowBitAmbient;
-
-
+        private float mMarginLeft;
 
         @Override
         public void onCreate(SurfaceHolder holder) {
@@ -230,6 +232,12 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
 
             boolean isRound = insets.isRound();
 
+            Log.d(LOG_TAG, "isRound: " + isRound);
+
+
+            // TODO: check with instructors a better way to do this.
+            calculateLeftMargin(insets);
+
             adjustPaintingForTime(isRound);
             adjustPaintingForDate(isRound);
             adjustPaintingForHighTemperature(isRound);
@@ -238,41 +246,40 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
             adjustPositioningForWeatherIcon(isRound);
         }
 
+        private void calculateLeftMargin(WindowInsets insets) {
+            boolean isChin = insets.getSystemWindowInsetBottom() > 0;
+            mMarginLeft = 0f;
+            if (isChin) {
+                mMarginLeft = mResources.getDimension(R.dimen.digital_chin_left_margin);
+            }
+        }
+
         private void adjustPaintingForTime(boolean isRound) {
-            mXOffsetTime = mResources.getDimension(isRound
-                    ? R.dimen.digital_time_interactive_x_offset_round : R.dimen.digital_time_interactive_x_offset);
-            float textSizeTime = mResources.getDimension(isRound
-                    ? R.dimen.digital_time_text_size_round : R.dimen.digital_time_text_size);
+            mXOffsetTime = mResources.getDimension(isRound ? R.dimen.digital_time_interactive_x_offset_round : R.dimen.digital_time_interactive_x_offset) + mMarginLeft;
+            float textSizeTime = mResources.getDimension(isRound ? R.dimen.digital_time_text_size_round : R.dimen.digital_time_text_size);
             mTextPaintTime.setTextSize(textSizeTime);
         }
 
         private void adjustPaintingForDate(boolean isRound) {
-            mXOffsetDate = mResources.getDimension(isRound
-                    ? R.dimen.digital_date_interactive_x_offset_round : R.dimen.digital_date_interactive_x_offset);
-            float textSizeDate = mResources.getDimension(isRound
-                    ? R.dimen.digital_date_text_size_round : R.dimen.digital_date_text_size);
+            mXOffsetDate = mResources.getDimension(isRound ? R.dimen.digital_date_interactive_x_offset_round : R.dimen.digital_date_interactive_x_offset) + mMarginLeft;
+            float textSizeDate = mResources.getDimension(isRound ? R.dimen.digital_date_text_size_round : R.dimen.digital_date_text_size);
             mTextPaintDate.setTextSize(textSizeDate);
         }
 
         private void adjustPaintingForHighTemperature(boolean isRound) {
-            mXOffsetHighTemperature = mResources.getDimension(isRound
-                    ? R.dimen.digital_high_temperature_interactive_x_offset_round : R.dimen.digital_high_temperature_interactive_x_offset);
-            float textSize = mResources.getDimension(isRound
-                    ? R.dimen.digital_high_temperature_text_size_round : R.dimen.digital_high_temperature_text_size);
+            mXOffsetHighTemperature = mResources.getDimension(isRound ? R.dimen.digital_high_temperature_interactive_x_offset_round : R.dimen.digital_high_temperature_interactive_x_offset) + mMarginLeft;
+            float textSize = mResources.getDimension(isRound ? R.dimen.digital_high_temperature_text_size_round : R.dimen.digital_high_temperature_text_size);
             mTextPaintHighTemperature.setTextSize(textSize);
         }
 
         private void adjustPaintingForLowTemperature(boolean isRound) {
-            mXOffsetLowTemperature = mResources.getDimension(isRound
-                    ? R.dimen.digital_low_temperature_interactive_x_offset_round : R.dimen.digital_low_temperature_interactive_x_offset);
-            float textSize = mResources.getDimension(isRound
-                    ? R.dimen.digital_low_temperature_text_size_round : R.dimen.digital_low_temperature_text_size);
+            mXOffsetLowTemperature = mResources.getDimension(isRound ? R.dimen.digital_low_temperature_interactive_x_offset_round : R.dimen.digital_low_temperature_interactive_x_offset) + mMarginLeft;
+            float textSize = mResources.getDimension(isRound ? R.dimen.digital_low_temperature_text_size_round : R.dimen.digital_low_temperature_text_size);
             mTextPaintLowTemperature.setTextSize(textSize);
         }
 
         private void adjustPositioningForWeatherIcon(boolean isRound) {
-            mXOffsetWeatherIcon = mResources.getDimension(isRound
-                    ? R.dimen.digital_weather_icon_interactive_x_offset_round : R.dimen.digital_weather_icon_interactive_x_offset);
+            mXOffsetWeatherIcon = mResources.getDimension(isRound ? R.dimen.digital_weather_icon_interactive_x_offset_round : R.dimen.digital_weather_icon_interactive_x_offset) + mMarginLeft;
         }
 
         @Override
@@ -362,7 +369,7 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
             String highTemperatureText = "25º";
             canvas.drawText(highTemperatureText, mXOffsetHighTemperature, mYOffsetHighTemperature, mTextPaintHighTemperature);
 
-            String lowTemperatureText = "17º";
+            String lowTemperatureText = "18º";
             canvas.drawText(lowTemperatureText, mXOffsetLowTemperature, mYOffsetLowTemperature, mTextPaintLowTemperature);
         }
 
