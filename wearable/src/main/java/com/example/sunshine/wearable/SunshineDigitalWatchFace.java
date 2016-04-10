@@ -85,6 +85,7 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
 
     private class Engine extends CanvasWatchFaceService.Engine {
         private static final String sDateFormat = "E, MMM d, yyyy";
+        private static final int sSeparatorWidth = 80;
         private final Handler mUpdateTimeHandler = new EngineHandler(this);
         private boolean mRegisteredTimeZoneReceiver = false;
 
@@ -93,6 +94,7 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
         private TextPaintHelper mTextPaintHelper;
 
         private Paint mBackgroundPaint;
+        private Paint mSeparatorPaint;
 
         private Paint mTextPaintTime;
         private Paint mTextPaintDate;
@@ -117,6 +119,8 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
 
         private float mXOffsetDate;
         private float mYOffsetDate;
+
+        private float mYOffsetSeparator;
 
         private float mXOffsetHighTemperature;
         private float mYOffsetHighTemperature;
@@ -153,6 +157,10 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
 
             mBackgroundPaint = new Paint();
             mBackgroundPaint.setColor(mResources.getColor(R.color.background_default));
+
+            mSeparatorPaint = new Paint();
+            mSeparatorPaint.setColor(mResources.getColor(R.color.digital_text_secondary));
+            mYOffsetSeparator = mResources.getDimension(R.dimen.digital_separator_y_offset);
 
             mTextPaintTime = mTextPaintHelper.forType(TextPaintHelper.Type.TIME);
             mTextPaintDate = mTextPaintHelper.forType(TextPaintHelper.Type.DATE);
@@ -319,6 +327,8 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
 
             String dateText = DateFormat.format(sDateFormat, mTime.toMillis(false)).toString().toUpperCase();
             canvas.drawText(dateText, mXOffsetDate, mYOffsetDate, mTextPaintDate);
+
+            canvas.drawLine(bounds.centerX() - (sSeparatorWidth / 2), mYOffsetSeparator, bounds.centerX() + (sSeparatorWidth / 2), mYOffsetSeparator, mSeparatorPaint);
 
             String highTemperatureText = "25º";
             canvas.drawText(highTemperatureText, mXOffsetHighTemperature, mYOffsetHighTemperature, mTextPaintHighTemperature);
