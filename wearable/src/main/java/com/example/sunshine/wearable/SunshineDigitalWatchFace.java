@@ -31,17 +31,32 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.DateFormat;
 import android.text.format.Time;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
 
 import com.example.sunshine.wearable.ui.TextPaintHelper;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.DataEvent;
+import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataMap;
+import com.google.android.gms.wearable.DataMapItem;
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
+import com.google.android.gms.wearable.Wearable;
 
 import java.lang.ref.WeakReference;
 import java.util.TimeZone;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -86,13 +101,29 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
         }
     }
 
-    private class Engine extends CanvasWatchFaceService.Engine {
+    private class Engine extends CanvasWatchFaceService.Engine implements DataApi.DataListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+        public static final String EXTRA_TIME_ZONE = "time-zone";
         private String LOG_TAG = Engine.class.getSimpleName();
+
+        private static final String sWeatherBasePath = "/weather";
+        private static final String sCurrentWeatherPath = "/current-weather";
+
+        private static final String sKeyUuid = "uuid";
+        private static final String sKeyHighTemperature = "high_temperature";
+        private static final String sKeyLowTemperature = "low_temperature";
+        private static final String sKeyWeatherId = "weather_id";
+
 
         private static final String sDateFormat = "E, MMM d, yyyy";
         private static final int sSeparatorWidth = 80;
         private final Handler mUpdateTimeHandler = new EngineHandler(this);
         private boolean mRegisteredTimeZoneReceiver = false;
+
+        private GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(SunshineDigitalWatchFace.this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(Wearable.API)
+                .build();
 
         private Resources mResources;
 
@@ -115,8 +146,7 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
         private final BroadcastReceiver mTimeZoneReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                mTime.clear(intent.getStringExtra("time-zone"));
-                mTime.setToNow();
+                updateTimeWithTimeZone(intent.getStringExtra(EXTRA_TIME_ZONE));
             }
         };
 
@@ -145,6 +175,9 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
          */
         private boolean mLowBitAmbient;
         private float mMarginLeft;
+
+        private String mHighTemperature;
+        private String mLowTemperature;
 
         @Override
         public void onCreate(SurfaceHolder holder) {
@@ -195,13 +228,16 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
             super.onVisibilityChanged(visible);
 
             if (visible) {
-                registerReceiver();
+                connectGoogleApiClient();
 
-                // Update time zone in case it changed while we weren't visible.
-                mTime.clear(TimeZone.getDefault().getID());
-                mTime.setToNow();
+                registerTimezoneReceiver();
+                updateTimeWithTimeZone(TimeZone.getDefault().getID());
+
+
             } else {
                 unregisterReceiver();
+
+                disconnectGoogleApiClient();
             }
 
             // Whether the timer should be running depends on whether we're visible (as well as
@@ -209,7 +245,24 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
             updateTimer();
         }
 
-        private void registerReceiver() {
+        private void updateTimeWithTimeZone(String id) {
+            // Update time zone in case it changed while we weren't visible.
+            mTime.clear(id);
+            mTime.setToNow();
+        }
+
+        private void connectGoogleApiClient() {
+            mGoogleApiClient.connect();
+        }
+
+        private void disconnectGoogleApiClient() {
+            if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+                Wearable.DataApi.removeListener(mGoogleApiClient, this);
+                mGoogleApiClient.disconnect();
+            }
+        }
+
+        private void registerTimezoneReceiver() {
             if (mRegisteredTimeZoneReceiver) {
                 return;
             }
@@ -418,11 +471,11 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
                 canvas.drawBitmap(mWeatherIcon, mXOffsetWeatherIcon, iconYOffset, null);
             }
 
-            String highTemperatureText = "25º";
-            canvas.drawText(highTemperatureText, mXOffsetHighTemperature, mYOffsetHighTemperature, mTextPaintHighTemperature);
+            mHighTemperature = "25º";
+            canvas.drawText(mHighTemperature, mXOffsetHighTemperature, mYOffsetHighTemperature, mTextPaintHighTemperature);
 
-            String lowTemperatureText = "18º";
-            canvas.drawText(lowTemperatureText, mXOffsetLowTemperature, mYOffsetLowTemperature, mTextPaintLowTemperature);
+            mLowTemperature = "18º";
+            canvas.drawText(mLowTemperature, mXOffsetLowTemperature, mYOffsetLowTemperature, mTextPaintLowTemperature);
         }
 
         /**
@@ -451,10 +504,88 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
             invalidate();
             if (shouldTimerBeRunning()) {
                 long timeMs = System.currentTimeMillis();
-                long delayMs = INTERACTIVE_UPDATE_RATE_MS
-                        - (timeMs % INTERACTIVE_UPDATE_RATE_MS);
+                long delayMs = INTERACTIVE_UPDATE_RATE_MS - (timeMs % INTERACTIVE_UPDATE_RATE_MS);
                 mUpdateTimeHandler.sendEmptyMessageDelayed(MSG_UPDATE_TIME, delayMs);
             }
+        }
+
+        @Override
+        public void onDataChanged(DataEventBuffer dataEventBuffer) {
+            for (DataEvent dataEvent : dataEventBuffer) {
+                if (dataEvent.getType() != DataEvent.TYPE_CHANGED) {
+                    continue;
+                }
+
+                DataMap dataMap = DataMapItem.fromDataItem(dataEvent.getDataItem()).getDataMap();
+                String path = dataEvent.getDataItem().getUri().getPath();
+                Log.d(LOG_TAG, path);
+
+                if (!path.equals(sCurrentWeatherPath)) {
+                    continue;
+                }
+
+//                if (dataMap.containsKey(sKeyWeatherId)) {
+//                    int weatherId = dataMap.getInt(sKeyWeatherId);
+//                    Drawable b = getResources().getDrawable(Utility.getIconResourceForWeatherCondition(weatherId));
+//                    Bitmap icon = ((BitmapDrawable) b).getBitmap();
+//                    float scaledWidth = (mTextTempHighPaint.getTextSize() / icon.getHeight()) * icon.getWidth();
+//                    mWeatherIcon = Bitmap.createScaledBitmap(icon, (int) scaledWidth, (int) mTextTempHighPaint.getTextSize(), true);
+//
+//                } else {
+//                    Log.d(LOG_TAG, "What? no weatherId?");
+//                }
+
+
+                if (dataMap.containsKey(sKeyHighTemperature)) {
+                    mHighTemperature = dataMap.getString(sKeyHighTemperature);
+                    Log.d(LOG_TAG, "High temperature" + mHighTemperature);
+                } else {
+                    Log.d(LOG_TAG, "No high temperature available!");
+                }
+
+                if (dataMap.containsKey(sKeyLowTemperature)) {
+                    mLowTemperature = dataMap.getString(sKeyLowTemperature);
+                    Log.d(LOG_TAG, "Low temperature: " + mLowTemperature);
+                } else {
+                    Log.d(LOG_TAG, "No low temperature available!");
+                }
+
+                invalidate();
+            }
+        }
+
+        @Override
+        public void onConnected(@Nullable Bundle bundle) {
+            Wearable.DataApi.addListener(mGoogleApiClient, Engine.this);
+            requestCurrentWeatherInfo();
+        }
+
+        public void requestCurrentWeatherInfo() {
+            PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(sWeatherBasePath);
+            putDataMapRequest.getDataMap().putString(sKeyUuid, UUID.randomUUID().toString());
+            PutDataRequest request = putDataMapRequest.asPutDataRequest();
+
+            Wearable.DataApi.putDataItem(mGoogleApiClient, request)
+                    .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+                        @Override
+                        public void onResult(DataApi.DataItemResult dataItemResult) {
+                            if (dataItemResult.getStatus().isSuccess()) {
+                                Log.d(LOG_TAG, "Current weather data requested Successfully.");
+                            } else {
+                                Log.d(LOG_TAG, "Failed to request current weather data.");
+                            }
+                        }
+                    });
+        }
+
+        @Override
+        public void onConnectionSuspended(int cause) {
+            Log.d(LOG_TAG, "onConnectionSuspended - cause: " + cause);
+        }
+
+        @Override
+        public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+            Log.d(LOG_TAG, "onConnectionFailed - connectionResult: " + connectionResult);
         }
     }
 }

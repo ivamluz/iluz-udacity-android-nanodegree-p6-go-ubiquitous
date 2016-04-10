@@ -37,4 +37,5 @@ dependencies {
     compile "com.google.android.gms:play-services-gcm:${playServicesVersion}"
     compile 'com.github.bumptech.glide:glide:3.5.2'
     compile 'com.google.android.apps.muzei:muzei-api:2.0'
+    compile "com.google.android.gms:play-services-wearable:${playServicesVersion}"
 }
