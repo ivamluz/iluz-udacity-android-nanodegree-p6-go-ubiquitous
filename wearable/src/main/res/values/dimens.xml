@@ -12,9 +12,9 @@
     <dimen name="digital_date_interactive_x_offset_round">25dp</dimen>
     <dimen name="digital_date_y_offset">85dp</dimen>
 
-    <dimen name="digital_high_temperature_text_size">20sp</dimen>
+    <dimen name="digital_high_temperature_text_size">30sp</dimen>
     <dimen name="digital_high_temperature_text_size_round">25sp</dimen>
-    <dimen name="digital_high_temperature_interactive_x_offset">60dp</dimen>
+    <dimen name="digital_high_temperature_interactive_x_offset">75dp</dimen>
     <dimen name="digital_high_temperature_interactive_x_offset_round">25dp</dimen>
-    <dimen name="digital_high_temperature_y_offset">125dp</dimen>
+    <dimen name="digital_high_temperature_y_offset">150dp</dimen>
 </resources>

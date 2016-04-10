@@ -144,7 +144,7 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
 
             mYOffsetTime = mResources.getDimension(R.dimen.digital_time_y_offset);
             mYOffsetDate = mResources.getDimension(R.dimen.digital_date_y_offset);
-            mYOffsetHighTemperature = mResources.getDimension(R.dimen.digital_date_y_offset);
+            mYOffsetHighTemperature = mResources.getDimension(R.dimen.digital_high_temperature_y_offset);
 
             mBackgroundPaint = new Paint();
             mBackgroundPaint.setColor(mResources.getColor(R.color.background_default));
