@@ -21,10 +21,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -101,6 +104,8 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
         private Paint mTextPaintHighTemperature;
         private Paint mTextPaintLowTemperature;
 
+        private Bitmap mWeatherIcon;
+
         private boolean mAmbient;
         private Time mTime;
 
@@ -121,6 +126,9 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
         private float mYOffsetDate;
 
         private float mYOffsetSeparator;
+
+        private float mXOffsetWeatherIcon;
+        private float mYOffsetWeatherIcon;
 
         private float mXOffsetHighTemperature;
         private float mYOffsetHighTemperature;
@@ -147,23 +155,27 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
                     .setAcceptsTapEvents(true)
                     .build());
             mResources = SunshineDigitalWatchFace.this.getResources();
-            mTextPaintHelper = new TextPaintHelper(mResources);
 
+            mTextPaintHelper = new TextPaintHelper(mResources);
 
             mYOffsetTime = mResources.getDimension(R.dimen.digital_time_y_offset);
             mYOffsetDate = mResources.getDimension(R.dimen.digital_date_y_offset);
+
+            mYOffsetSeparator = mResources.getDimension(R.dimen.digital_separator_y_offset);
+            mYOffsetWeatherIcon = mResources.getDimension(R.dimen.digital_weather_icon_y_offset);
+
             mYOffsetHighTemperature = mResources.getDimension(R.dimen.digital_high_temperature_y_offset);
             mYOffsetLowTemperature = mResources.getDimension(R.dimen.digital_low_temperature_y_offset);
 
             mBackgroundPaint = new Paint();
             mBackgroundPaint.setColor(mResources.getColor(R.color.background_default));
 
-            mSeparatorPaint = new Paint();
-            mSeparatorPaint.setColor(mResources.getColor(R.color.digital_text_secondary));
-            mYOffsetSeparator = mResources.getDimension(R.dimen.digital_separator_y_offset);
-
             mTextPaintTime = mTextPaintHelper.forType(TextPaintHelper.Type.TIME);
             mTextPaintDate = mTextPaintHelper.forType(TextPaintHelper.Type.DATE);
+
+            mSeparatorPaint = new Paint();
+            mSeparatorPaint.setColor(mResources.getColor(R.color.digital_text_secondary));
+
             mTextPaintHighTemperature = mTextPaintHelper.forType(TextPaintHelper.Type.HIGH_TEMPERATURE);
             mTextPaintLowTemperature = mTextPaintHelper.forType(TextPaintHelper.Type.LOW_TEMPERATURE);
 
@@ -222,6 +234,8 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
             adjustPaintingForDate(isRound);
             adjustPaintingForHighTemperature(isRound);
             adjustPaintingForLowTemperature(isRound);
+
+            adjustPositioningForWeatherIcon(isRound);
         }
 
         private void adjustPaintingForTime(boolean isRound) {
@@ -254,6 +268,11 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
             float textSize = mResources.getDimension(isRound
                     ? R.dimen.digital_low_temperature_text_size_round : R.dimen.digital_low_temperature_text_size);
             mTextPaintLowTemperature.setTextSize(textSize);
+        }
+
+        private void adjustPositioningForWeatherIcon(boolean isRound) {
+            mXOffsetWeatherIcon = mResources.getDimension(isRound
+                    ? R.dimen.digital_weather_icon_interactive_x_offset_round : R.dimen.digital_weather_icon_interactive_x_offset);
         }
 
         @Override
@@ -329,6 +348,16 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
             canvas.drawText(dateText, mXOffsetDate, mYOffsetDate, mTextPaintDate);
 
             canvas.drawLine(bounds.centerX() - (sSeparatorWidth / 2), mYOffsetSeparator, bounds.centerX() + (sSeparatorWidth / 2), mYOffsetSeparator, mSeparatorPaint);
+
+            if (!isInAmbientMode()) {
+                if (mWeatherIcon == null) {
+                    Drawable drawable = getResources().getDrawable(R.drawable.ic_light_clouds);
+                    mWeatherIcon = ((BitmapDrawable) drawable).getBitmap();
+                }
+
+                float iconYOffset = mYOffsetWeatherIcon - mWeatherIcon.getHeight();
+                canvas.drawBitmap(mWeatherIcon, mXOffsetWeatherIcon, iconYOffset, null);
+            }
 
             String highTemperatureText = "25º";
             canvas.drawText(highTemperatureText, mXOffsetHighTemperature, mYOffsetHighTemperature, mTextPaintHighTemperature);
