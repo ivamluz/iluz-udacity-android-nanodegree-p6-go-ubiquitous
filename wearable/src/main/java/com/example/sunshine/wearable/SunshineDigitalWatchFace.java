@@ -232,9 +232,6 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
 
             boolean isRound = insets.isRound();
 
-            Log.d(LOG_TAG, "isRound: " + isRound);
-
-
             // TODO: check with instructors a better way to do this.
             calculateLeftMargin(insets);
 
