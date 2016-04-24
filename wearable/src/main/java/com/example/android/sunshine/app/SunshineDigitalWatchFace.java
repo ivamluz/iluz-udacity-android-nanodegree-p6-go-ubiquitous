@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.sunshine.wearable;
+package com.example.android.sunshine.app;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -41,7 +41,7 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
 
-import com.example.sunshine.wearable.ui.TextPaintHelper;
+import com.example.android.sunshine.app.ui.TextPaintHelper;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -105,10 +105,10 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
         public static final String EXTRA_TIME_ZONE = "time-zone";
         private String LOG_TAG = Engine.class.getSimpleName();
 
-        private static final String WEATHER_PATH = "/weather";
-        private static final String WEATHER_FORECAST_PATH = "/weather-forecast";
+        private static final String sWeatherPath = "/weather";
+        private static final String sCurrentWeatherPath = "/current-weather";
 
-        private static final String sKeyUuid = "uuid123";
+        private static final String sKeyUuid = "uuid";
         private static final String sKeyHighTemperature = "high_temperature";
         private static final String sKeyLowTemperature = "low_temperature";
         private static final String sKeyWeatherId = "weather_id";
@@ -474,11 +474,13 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
                 canvas.drawBitmap(mWeatherIcon, mXOffsetWeatherIcon, iconYOffset, null);
             }
 
-            mHighTemperature = "25º";
-            canvas.drawText(mHighTemperature, mXOffsetHighTemperature, mYOffsetHighTemperature, mTextPaintHighTemperature);
+            if (mHighTemperature != null && mHighTemperature.length() > 0) {
+                canvas.drawText(mHighTemperature, mXOffsetHighTemperature, mYOffsetHighTemperature, mTextPaintHighTemperature);
+            }
 
-            mLowTemperature = "18º";
-            canvas.drawText(mLowTemperature, mXOffsetLowTemperature, mYOffsetLowTemperature, mTextPaintLowTemperature);
+            if (mLowTemperature != null && mLowTemperature.length() > 0) {
+                canvas.drawText(mLowTemperature, mXOffsetLowTemperature, mYOffsetLowTemperature, mTextPaintLowTemperature);
+            }
         }
 
         /**
@@ -529,11 +531,10 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
                 Log.d(LOG_TAG, "onDataChanged - dataMap.keySet():" + dataMap.keySet());
 
 
-
                 String path = dataEvent.getDataItem().getUri().getPath();
                 Log.d(LOG_TAG, "onDataChanged - path:" + path);
 
-                if (!path.equals(WEATHER_FORECAST_PATH)) {
+                if (!path.equals(sCurrentWeatherPath)) {
                     continue;
                 }
 
@@ -576,7 +577,7 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
         }
 
         public void requestCurrentWeatherInfo() {
-            PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(WEATHER_PATH);
+            PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(sWeatherPath);
             putDataMapRequest.getDataMap().putString(sKeyUuid, UUID.randomUUID().toString());
             final PutDataRequest request = putDataMapRequest.asPutDataRequest();
 

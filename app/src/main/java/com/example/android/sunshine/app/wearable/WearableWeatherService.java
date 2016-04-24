@@ -13,8 +13,7 @@ import com.google.android.gms.wearable.WearableListenerService;
 public class WearableWeatherService extends WearableListenerService {
     private static final String LOG_TAG = WearableWeatherService.class.getSimpleName();
 
-//    private static final String sWeatherPath = "/weather";
-    private static final String WEATHER_PATH = "/weather";
+    private static final String sWeatherPath = "/weather";
 
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {
@@ -29,7 +28,7 @@ public class WearableWeatherService extends WearableListenerService {
                 String path = dataEvent.getDataItem().getUri().getPath();
                 Log.d(LOG_TAG, "Path: " + path);
 
-                if (path.equals(WEATHER_PATH)) {
+                if (path.equals(sWeatherPath)) {
                     SunshineSyncAdapter.syncImmediately(this);
                 }
             }

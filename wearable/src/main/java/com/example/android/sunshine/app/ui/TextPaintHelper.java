@@ -1,10 +1,10 @@
-package com.example.sunshine.wearable.ui;
+package com.example.android.sunshine.app.ui;
 
 import android.content.res.Resources;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 
-import com.example.sunshine.wearable.R;
+import com.example.android.sunshine.app.R;
 
 /**
  * Created by iluz on 4/10/16.

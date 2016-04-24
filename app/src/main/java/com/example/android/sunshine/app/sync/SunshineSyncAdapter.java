@@ -58,12 +58,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Date;
 import java.util.UUID;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 
 public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+    public static final String sKeyTimestamp = "timestamp";
     public final String LOG_TAG = SunshineSyncAdapter.class.getSimpleName();
     public static final String ACTION_DATA_UPDATED =
             "com.example.android.sunshine.app.ACTION_DATA_UPDATED";
@@ -76,8 +76,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements 
 
 
     // WEARABLE DATA
-    private static final String WEATHER_FORECAST_PATH = "/weather-forecast";
-    private static final String sKeyUuid = "uuid123";
+    private static final String sCurrentWeatherPath = "/current-weather";
+    private static final String sKeyUuid = "uuid";
     private static final String sKeyHighTemperature = "high_temperature";
     private static final String sKeyLowTemperature = "low_temperature";
     private static final String sKeyWeatherId = "weather_id";
@@ -405,12 +405,12 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements 
 
         Log.d(LOG_TAG, "isConnected: " + mGoogleApiClient.isConnected());
 
-        PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(WEATHER_FORECAST_PATH).setUrgent();
-//        putDataMapRequest.getDataMap().putString(sKeyUuid, UUID.randomUUID().toString());
+        PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(sCurrentWeatherPath).setUrgent();
+        putDataMapRequest.getDataMap().putString(sKeyUuid, UUID.randomUUID().toString());
         putDataMapRequest.getDataMap().putInt(sKeyWeatherId, weatherId);
-//        putDataMapRequest.getDataMap().putString(sKeyHighTemperature, Utility.formatTemperature(getContext(), highTemperature));
-//        putDataMapRequest.getDataMap().putString(sKeyLowTemperature, Utility.formatTemperature(getContext(), lowTemperature));
-        putDataMapRequest.getDataMap().putString("timestamp", String.valueOf(System.currentTimeMillis()));
+        putDataMapRequest.getDataMap().putString(sKeyHighTemperature, Utility.formatTemperature(getContext(), highTemperature));
+        putDataMapRequest.getDataMap().putString(sKeyLowTemperature, Utility.formatTemperature(getContext(), lowTemperature));
+        putDataMapRequest.getDataMap().putString(sKeyTimestamp, String.valueOf(System.currentTimeMillis()));
 
         Log.d(LOG_TAG, "putDataMapRequest: " + putDataMapRequest);
         Log.d(LOG_TAG, "putDataMapRequest.getDataMap(): " + putDataMapRequest.getDataMap());
