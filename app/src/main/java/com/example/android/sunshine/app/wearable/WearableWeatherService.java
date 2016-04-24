@@ -13,10 +13,13 @@ import com.google.android.gms.wearable.WearableListenerService;
 public class WearableWeatherService extends WearableListenerService {
     private static final String LOG_TAG = WearableWeatherService.class.getSimpleName();
 
+//    private static final String sWeatherPath = "/weather";
     private static final String WEATHER_PATH = "/weather";
 
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {
+        Log.d(LOG_TAG, "onDataChanged - dataEvents: " + dataEvents);
+
         if (null == dataEvents || dataEvents.getCount() == 0) {
             return;
         }

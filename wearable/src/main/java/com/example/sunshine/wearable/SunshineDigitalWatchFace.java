@@ -105,10 +105,10 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
         public static final String EXTRA_TIME_ZONE = "time-zone";
         private String LOG_TAG = Engine.class.getSimpleName();
 
-        private static final String sWeatherBasePath = "/weather";
-        private static final String sCurrentWeatherPath = "/current-weather";
+        private static final String WEATHER_PATH = "/weather";
+        private static final String WEATHER_FORECAST_PATH = "/weather-forecast";
 
-        private static final String sKeyUuid = "uuid";
+        private static final String sKeyUuid = "uuid123";
         private static final String sKeyHighTemperature = "high_temperature";
         private static final String sKeyLowTemperature = "low_temperature";
         private static final String sKeyWeatherId = "weather_id";
@@ -252,11 +252,14 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
         }
 
         private void connectGoogleApiClient() {
+            Log.d(LOG_TAG, "Connecting GoogleApiClient");
             mGoogleApiClient.connect();
         }
 
         private void disconnectGoogleApiClient() {
             if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+                Log.d(LOG_TAG, "Connecting GoogleApiClient");
+
                 Wearable.DataApi.removeListener(mGoogleApiClient, this);
                 mGoogleApiClient.disconnect();
             }
@@ -516,11 +519,21 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
                     continue;
                 }
 
-                DataMap dataMap = DataMapItem.fromDataItem(dataEvent.getDataItem()).getDataMap();
-                String path = dataEvent.getDataItem().getUri().getPath();
-                Log.d(LOG_TAG, path);
+                Log.d(LOG_TAG, "onDataChanged - dataEvent:" + dataEvent);
+                Log.d(LOG_TAG, "onDataChanged - dataEvent.getDataItem():" + dataEvent.getDataItem());
 
-                if (!path.equals(sCurrentWeatherPath)) {
+                DataMap dataMap = DataMapItem.fromDataItem(dataEvent.getDataItem()).getDataMap();
+
+                Log.d(LOG_TAG, "onDataChanged - dataMap:" + dataMap);
+
+                Log.d(LOG_TAG, "onDataChanged - dataMap.keySet():" + dataMap.keySet());
+
+
+
+                String path = dataEvent.getDataItem().getUri().getPath();
+                Log.d(LOG_TAG, "onDataChanged - path:" + path);
+
+                if (!path.equals(WEATHER_FORECAST_PATH)) {
                     continue;
                 }
 
@@ -556,21 +569,23 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
 
         @Override
         public void onConnected(@Nullable Bundle bundle) {
+            Log.d(LOG_TAG, "onConnected");
+
             Wearable.DataApi.addListener(mGoogleApiClient, Engine.this);
             requestCurrentWeatherInfo();
         }
 
         public void requestCurrentWeatherInfo() {
-            PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(sWeatherBasePath);
+            PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(WEATHER_PATH);
             putDataMapRequest.getDataMap().putString(sKeyUuid, UUID.randomUUID().toString());
-            PutDataRequest request = putDataMapRequest.asPutDataRequest();
+            final PutDataRequest request = putDataMapRequest.asPutDataRequest();
 
             Wearable.DataApi.putDataItem(mGoogleApiClient, request)
                     .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
                         @Override
                         public void onResult(DataApi.DataItemResult dataItemResult) {
                             if (dataItemResult.getStatus().isSuccess()) {
-                                Log.d(LOG_TAG, "Current weather data requested Successfully.");
+                                Log.d(LOG_TAG, "Current weather data requested successfully to path: " + request.getUri());
                             } else {
                                 Log.d(LOG_TAG, "Failed to request current weather data.");
                             }

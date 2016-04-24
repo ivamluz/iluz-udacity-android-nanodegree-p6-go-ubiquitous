@@ -24,6 +24,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.IntDef;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.text.format.Time;
@@ -36,6 +38,7 @@ import com.example.android.sunshine.app.R;
 import com.example.android.sunshine.app.Utility;
 import com.example.android.sunshine.app.data.WeatherContract;
 import com.example.android.sunshine.app.muzei.WeatherMuzeiSource;
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.DataApi;
@@ -55,11 +58,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Date;
 import java.util.UUID;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 
-public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
+public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     public final String LOG_TAG = SunshineSyncAdapter.class.getSimpleName();
     public static final String ACTION_DATA_UPDATED =
             "com.example.android.sunshine.app.ACTION_DATA_UPDATED";
@@ -72,8 +76,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
 
     // WEARABLE DATA
-    private static final String sCurrentWeatherPath = "/current-weather";
-    private static final String sKeyUuid = "uuid";
+    private static final String WEATHER_FORECAST_PATH = "/weather-forecast";
+    private static final String sKeyUuid = "uuid123";
     private static final String sKeyHighTemperature = "high_temperature";
     private static final String sKeyLowTemperature = "low_temperature";
     private static final String sKeyWeatherId = "weather_id";
@@ -110,6 +114,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
         if (mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(context)
+                                  .addConnectionCallbacks(this)
+                                  .addOnConnectionFailedListener(this)
                                   .addApi(Wearable.API)
                                   .build();
         }
@@ -397,11 +403,17 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
         mGoogleApiClient.connect();
 
-        PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(sCurrentWeatherPath);
-        putDataMapRequest.getDataMap().putString(sKeyUuid, UUID.randomUUID().toString());
+        Log.d(LOG_TAG, "isConnected: " + mGoogleApiClient.isConnected());
+
+        PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(WEATHER_FORECAST_PATH).setUrgent();
+//        putDataMapRequest.getDataMap().putString(sKeyUuid, UUID.randomUUID().toString());
         putDataMapRequest.getDataMap().putInt(sKeyWeatherId, weatherId);
-        putDataMapRequest.getDataMap().putString(sKeyHighTemperature, Utility.formatTemperature(getContext(), highTemperature));
-        putDataMapRequest.getDataMap().putString(sKeyLowTemperature, Utility.formatTemperature(getContext(), lowTemperature));
+//        putDataMapRequest.getDataMap().putString(sKeyHighTemperature, Utility.formatTemperature(getContext(), highTemperature));
+//        putDataMapRequest.getDataMap().putString(sKeyLowTemperature, Utility.formatTemperature(getContext(), lowTemperature));
+        putDataMapRequest.getDataMap().putString("timestamp", String.valueOf(System.currentTimeMillis()));
+
+        Log.d(LOG_TAG, "putDataMapRequest: " + putDataMapRequest);
+        Log.d(LOG_TAG, "putDataMapRequest.getDataMap(): " + putDataMapRequest.getDataMap());
 
         PutDataRequest request = putDataMapRequest.asPutDataRequest();
 
@@ -699,5 +711,20 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
         SharedPreferences.Editor spe = sp.edit();
         spe.putInt(c.getString(R.string.pref_location_status_key), locationStatus);
         spe.commit();
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        Log.d(LOG_TAG, "onConnected");
+    }
+
+    @Override
+    public void onConnectionSuspended(int cause) {
+        Log.d(LOG_TAG, "onConnectionSuspended - cause: " + cause);
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.d(LOG_TAG, "onConnectionFailed - connectionResult: " + connectionResult);
     }
 }
