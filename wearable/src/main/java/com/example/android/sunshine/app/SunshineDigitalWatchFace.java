@@ -411,6 +411,7 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
                 adjustPaintingForDate();
                 adjustPaintingForHighTemperature();
                 adjustPaintingForLowTemperature();
+                adjustSeparator();
 
                 invalidate();
             }
