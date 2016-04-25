@@ -41,7 +41,6 @@ import com.example.android.sunshine.app.muzei.WeatherMuzeiSource;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
@@ -82,7 +81,6 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements 
     private static final String sKeyHighTemperature = "high_temperature";
     private static final String sKeyLowTemperature = "low_temperature";
     private static final String sKeyWeatherId = "weather_id";
-    private static final String sKeyWeatherIcon = "weather_icon";
 
 
     private static final String[] NOTIFY_WEATHER_PROJECTION = new String[]{
@@ -413,10 +411,6 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements 
         putDataMapRequest.getDataMap().putString(sKeyHighTemperature, Utility.formatTemperature(getContext(), highTemperature));
         putDataMapRequest.getDataMap().putString(sKeyLowTemperature, Utility.formatTemperature(getContext(), lowTemperature));
         putDataMapRequest.getDataMap().putString(sKeyTimestamp, String.valueOf(System.currentTimeMillis()));
-
-        Bitmap bitmap = BitmapFactory.decodeResource(getContext().getResources(), Utility.getIconResourceForWeatherCondition(weatherId));
-        Asset asset = Utility.createAssetFromBitmap(bitmap);
-        putDataMapRequest.getDataMap().putAsset(sKeyWeatherIcon, asset);
 
         Log.d(LOG_TAG, "putDataMapRequest: " + putDataMapRequest);
         Log.d(LOG_TAG, "putDataMapRequest.getDataMap(): " + putDataMapRequest.getDataMap());
