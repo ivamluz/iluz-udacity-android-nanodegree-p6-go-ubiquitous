@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -45,6 +46,7 @@ import com.example.android.sunshine.app.ui.TextPaintHelper;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
@@ -54,6 +56,7 @@ import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -112,7 +115,6 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
         private static final String sKeyHighTemperature = "high_temperature";
         private static final String sKeyLowTemperature = "low_temperature";
         private static final String sKeyWeatherId = "weather_id";
-
 
         private static final String sDateFormat = "E, MMM d, yyyy";
         private static final int sSeparatorWidth = 80;
@@ -465,13 +467,15 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
             canvas.drawLine(bounds.centerX() - (sSeparatorWidth / 2), mYOffsetSeparator, bounds.centerX() + (sSeparatorWidth / 2), mYOffsetSeparator, mSeparatorPaint);
 
             if (!isInAmbientMode()) {
-                if (mWeatherIcon == null) {
-                    Drawable drawable = getResources().getDrawable(R.drawable.ic_light_clouds);
-                    mWeatherIcon = ((BitmapDrawable) drawable).getBitmap();
-                }
+//                if (mWeatherIcon == null) {
+//                    Drawable drawable = getResources().getDrawable(R.drawable.ic_light_clouds);
+//                    mWeatherIcon = ((BitmapDrawable) drawable).getBitmap();
+//                }
 
-                float iconYOffset = mYOffsetWeatherIcon - mWeatherIcon.getHeight();
-                canvas.drawBitmap(mWeatherIcon, mXOffsetWeatherIcon, iconYOffset, null);
+                if (mWeatherIcon != null) {
+                    float iconYOffset = mYOffsetWeatherIcon - mWeatherIcon.getHeight();
+                    canvas.drawBitmap(mWeatherIcon, mXOffsetWeatherIcon, iconYOffset, null);
+                }
             }
 
             if (mHighTemperature != null && mHighTemperature.length() > 0) {
@@ -538,21 +542,19 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
                     continue;
                 }
 
-//                if (dataMap.containsKey(sKeyWeatherId)) {
-//                    int weatherId = dataMap.getInt(sKeyWeatherId);
-//                    Drawable b = getResources().getDrawable(Utility.getIconResourceForWeatherCondition(weatherId));
-//                    Bitmap icon = ((BitmapDrawable) b).getBitmap();
-//                    float scaledWidth = (mTextTempHighPaint.getTextSize() / icon.getHeight()) * icon.getWidth();
-//                    mWeatherIcon = Bitmap.createScaledBitmap(icon, (int) scaledWidth, (int) mTextTempHighPaint.getTextSize(), true);
-//
-//                } else {
-//                    Log.d(LOG_TAG, "What? no weatherId?");
-//                }
+                if (dataMap.containsKey(sKeyWeatherId)) {
+                    int weatherId = dataMap.getInt(sKeyWeatherId);
+                    Drawable b = getResources().getDrawable(Utility.getIconResourceForWeatherCondition(weatherId));
+                    mWeatherIcon = ((BitmapDrawable) b).getBitmap();
+                } else {
+                    mWeatherIcon = null;
+                    Log.d(LOG_TAG, "No weatherId available!");
+                }
 
 
                 if (dataMap.containsKey(sKeyHighTemperature)) {
                     mHighTemperature = dataMap.getString(sKeyHighTemperature);
-                    Log.d(LOG_TAG, "High temperature" + mHighTemperature);
+                    Log.d(LOG_TAG, "High temperature: " + mHighTemperature);
                 } else {
                     Log.d(LOG_TAG, "No high temperature available!");
                 }
