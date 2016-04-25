@@ -22,7 +22,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -46,7 +45,6 @@ import com.example.android.sunshine.app.ui.TextPaintHelper;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
@@ -56,7 +54,6 @@ import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
-import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -165,7 +162,6 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
         private float mXOffsetWeatherIcon;
         private float mYOffsetWeatherIcon;
 
-        private float mXOffsetHighTemperature;
         private float mYOffsetHighTemperature;
 
         private float mXOffsetLowTemperature;
@@ -345,10 +341,8 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
 
         private void adjustPaintingForHighTemperature() {
             if (isInAmbientMode()) {
-                mXOffsetHighTemperature = mResources.getDimension(mIsRound ? R.dimen.digital_high_temperature_ambient_x_offset_round : R.dimen.digital_high_temperature_ambient_x_offset) + mMarginLeft;
                 mTextPaintHighTemperature.setColor(mResources.getColor(TextPaintHelper.Type.HIGH_TEMPERATURE.getAmbientColor()));
             } else {
-                mXOffsetHighTemperature = mResources.getDimension(mIsRound ? R.dimen.digital_high_temperature_interactive_x_offset_round : R.dimen.digital_high_temperature_interactive_x_offset) + mMarginLeft;
                 mTextPaintHighTemperature.setColor(mResources.getColor(TextPaintHelper.Type.HIGH_TEMPERATURE.getInteractiveColor()));
             }
 
@@ -468,11 +462,6 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
             canvas.drawLine(bounds.centerX() - (sSeparatorWidth / 2), mYOffsetSeparator, bounds.centerX() + (sSeparatorWidth / 2), mYOffsetSeparator, mSeparatorPaint);
 
             if (!isInAmbientMode()) {
-//                if (mWeatherIcon == null) {
-//                    Drawable drawable = getResources().getDrawable(R.drawable.ic_light_clouds);
-//                    mWeatherIcon = ((BitmapDrawable) drawable).getBitmap();
-//                }
-
                 if (mWeatherIcon != null) {
                     float iconYOffset = mYOffsetWeatherIcon - mWeatherIcon.getHeight();
                     canvas.drawBitmap(mWeatherIcon, mXOffsetWeatherIcon, iconYOffset, null);
@@ -480,7 +469,8 @@ public class SunshineDigitalWatchFace extends CanvasWatchFaceService {
             }
 
             if (mHighTemperature != null && mHighTemperature.length() > 0) {
-                canvas.drawText(mHighTemperature, mXOffsetHighTemperature, mYOffsetHighTemperature, mTextPaintHighTemperature);
+                float xOffset = (canvas.getWidth() / 2) - (mTextPaintHighTemperature.measureText(mHighTemperature) / 2);
+                canvas.drawText(mHighTemperature, xOffset, mYOffsetHighTemperature, mTextPaintHighTemperature);
             }
 
             if (mLowTemperature != null && mLowTemperature.length() > 0) {
